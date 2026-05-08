@@ -101,46 +101,72 @@ function CandidateEditor({ candidate, setCandidate }) {
 function SideList({ title, items }) {
   const arr = Array.isArray(items) ? items.filter(Boolean) : items ? [items] : [];
   return (
-    <div>
+    <section className="sidebar-block">
       <div className="side-title">{title}</div>
       {arr.length ? (
         <ul className="side-list">{arr.map((item, i) => <li key={i}>{item}</li>)}</ul>
       ) : (
         <div className="side-text">—</div>
       )}
-    </div>
+    </section>
   );
 }
 
 function Preview({ candidate }) {
   const exp = candidate.experience || [];
+  const initials = String(candidate.name || "CV")
+    .split(" ")
+    .map((x) => x[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
   return (
-    <div className="cv-page">
-      <main className="cv-main">
-        <div className="cv-name">{candidate.name || "Candidate Name"}</div>
-        <div className="cv-profile">{candidate.profile || "Profile summary will appear here after extraction."}</div>
-        <section className="cv-section">
-          <div className="cv-section-title">Work. Experience</div>
-          {exp.length ? exp.map((job, i) => (
-            <div className="cv-job" key={i}>
-              <div className="cv-job-title"><span>{job.role || "Role"}</span><span>{job.dates || ""}</span></div>
-              <div className="cv-company">{job.company}</div>
-              <ul className="cv-bullets">{(job.bullets || []).map((b, idx) => <li key={idx}>{b}</li>)}</ul>
-            </div>
-          )) : <p className="side-text">Experience will appear here.</p>}
-        </section>
-      </main>
-      <aside className="cv-side">
-        <div className="side-title">Location</div>
-        <div className="side-text">{candidate.location || "—"}</div>
-        <SideList title="Education" items={candidate.education} />
-        <SideList title="Languages" items={candidate.languages} />
-        <SideList title="Accomplishments" items={candidate.accomplishments} />
-        <div className="side-title">Nationality</div>
-        <div className="side-text">{candidate.nationality || "—"}</div>
-        <SideList title="Certifications" items={candidate.certifications} />
-        <SideList title="Proficiencies" items={candidate.proficiencies} />
-      </aside>
+    <div className="tha-sheet">
+      <header className="tha-header">
+        <div className="photo-panel"><div className="photo-circle">{initials}</div></div>
+        <div className="name-panel"><div className="cv-name">{candidate.name || "Candidate Name"}</div></div>
+      </header>
+      <div className="top-rule" />
+      <div className="tha-body">
+        <aside className="tha-sidebar">
+          <section className="sidebar-block first-block">
+            <div className="side-title">Location</div>
+            <div className="side-text">{candidate.location || "—"}</div>
+          </section>
+          <SideList title="Education" items={candidate.education} />
+          <section className="sidebar-block">
+            <div className="side-title">Nationality</div>
+            <div className="side-text">{candidate.nationality || "—"}</div>
+          </section>
+          <SideList title="Languages" items={candidate.languages} />
+          <SideList title="Accomplishments" items={candidate.accomplishments} />
+          <SideList title="Certifications" items={candidate.certifications} />
+          <SideList title="Proficiencies" items={candidate.proficiencies} />
+        </aside>
+        <main className="tha-main">
+          <section className="main-section profile-section">
+            <h2>Profile</h2>
+            <div className="section-line" />
+            <p>{candidate.profile || "Profile summary will appear here after extraction."}</p>
+          </section>
+          <section className="main-section experience-section">
+            <h2>Work. Experience</h2>
+            <div className="section-line" />
+            {exp.length ? exp.map((job, i) => (
+              <div className="cv-job" key={i}>
+                <div className="cv-job-head">
+                  <div>
+                    <div className="cv-role">{job.role || "Role"}</div>
+                    <div className="cv-company">{job.company}</div>
+                  </div>
+                  <div className="cv-dates">{job.dates || ""}</div>
+                </div>
+                <ul className="cv-bullets">{(job.bullets || []).map((b, idx) => <li key={idx}>{b}</li>)}</ul>
+              </div>
+            )) : <p>Experience will appear here.</p>}
+          </section>
+        </main>
+      </div>
     </div>
   );
 }
@@ -210,13 +236,13 @@ export default function Home() {
       <div className="header">
         <div>
           <h1>THA CV Formatter Prototype</h1>
-          <p>Upload or paste a raw CV. The app extracts candidate data, lets your team edit it, previews it in the THA-style two-column format, then exports a Word document.</p>
+          <p>V3 uses the actual THA layout pattern: image block top-left, name top-right, teal divider, teal left sidebar, and main profile/work-experience column on the right.</p>
         </div>
-        <div className="badge">Prototype • Vercel-ready</div>
+        <div className="badge">Prototype • V3</div>
       </div>
 
       <div className="grid">
-        <section className="panel">
+        <section className="panel controls-panel">
           <div className="panel-inner">
             <h2>1. Upload / paste CV</h2>
             <p className="help">PDF and DOCX are supported. For large PDFs, paste the CV text instead during prototype testing.</p>
@@ -232,17 +258,17 @@ export default function Home() {
             {error && <div className="error">{error}</div>}
             {warning && <div className="warn">{warning}</div>}
           </div>
-        </section>
-
-        <section className="panel">
-          <div className="panel-inner">
+          <div className="panel-inner editor-section">
             <h2>2. Edit extracted profile</h2>
             <CandidateEditor candidate={candidate} setCandidate={setCandidate} />
-            <div className="actions">
-              <button className="primary" onClick={generateDocx} disabled={!hasCandidate || exporting}>{exporting ? "Generating..." : "Download THA-style DOCX"}</button>
-              <button className="secondary" onClick={() => window.print()}>Print / Save preview as PDF</button>
+            <div className="actions sticky-actions">
+              <button className="primary" onClick={generateDocx} disabled={!hasCandidate || exporting}>{exporting ? "Generating..." : "Download DOCX"}</button>
+              <button className="secondary" onClick={() => window.print()}>Print / Save PDF</button>
             </div>
           </div>
+        </section>
+
+        <section className="panel preview-panel">
           <div className="preview-wrap">
             <Preview candidate={candidate} />
           </div>
